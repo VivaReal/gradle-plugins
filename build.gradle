@@ -22,39 +22,6 @@ subprojects {
     }
 
 
-ext.pomConfiguration = {
-    name 'Gradle Sonatype Nexus plugin'
-    description 'Gradle plugin for configuring and upload artifacts to Sonatype Nexus.'
-    url 'https://github.com/bmuschko/gradle-nexus-plugin'
-    inceptionYear '2012'
-
-    scm {
-        url 'https://github.com/bmuschko/gradle-nexus-plugin'
-        connection 'scm:https://bmuschko@github.com/bmuschko/gradle-nexus-plugin.git'
-        developerConnection 'scm:git://github.com/bmuschko/gradle-nexus-plugin.git'
-    }
-
-    licenses {
-        license {
-            name 'The Apache Software License, Version 2.0'
-            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-            distribution 'repo'
-        }
-    }
-
-    developers {
-        developer {
-            id 'bmuschko'
-            name 'Benjamin Muschko'
-            email 'benjamin.muschko@gmail.com'
-        }
-    }
-}
-install {
-    repositories.mavenInstaller {
-        pom.project pomConfiguration
-    }
-}
 
 uploadArchives {
 
@@ -62,7 +29,6 @@ uploadArchives {
         repository(url: "https://jenkins.vivareal.com/nexus/content/repositories/snapshots") {
             authentication(userName: "deployment", password: "8TrnlwNL5IuUX3cjeJE")
         }
-	pom.project pomConfiguration
     }
          
 }
@@ -84,7 +50,7 @@ uploadArchives {
 
 project(':elastic-beanstalk') {
 
-    version = '1.0-SNAPSHOT'
+    version = '1.0'
     
     dependencies {
       groovy localGroovy()
