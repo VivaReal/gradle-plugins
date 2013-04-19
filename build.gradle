@@ -26,7 +26,7 @@ subprojects {
 uploadArchives {
 
     repositories.mavenDeployer {
-        repository(url: "https://jenkins.vivareal.com/nexus/content/repositories/snapshots") {
+        repository(url: "https://jenkins.vivareal.com/nexus/content/repositories/releases") {
             authentication(userName: "deployment", password: "8TrnlwNL5IuUX3cjeJE")
         }
     }
