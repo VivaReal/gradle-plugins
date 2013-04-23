@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit
 
 class ElasticBeanstalkPlugin implements Plugin<Project> {
 	
-	def applicationName = "VivaRealAPI"
+	def applicationName
 	def previousEnvironmentName
 	def versionLabel
 	def configTemplate
@@ -188,7 +188,7 @@ class ElasticBeanstalkPlugin implements Plugin<Project> {
 	}
 
 	private File projectWarFilename(Project project) {
-		new File(project.buildDir,"libs/${project.name}.war")
+            new File(project.buildDir,"libs/${project.name}-${versionLabel}.war")
 	}
 	
 	@groovy.transform.TimedInterrupt(value = 20L, unit = TimeUnit.MINUTES)
