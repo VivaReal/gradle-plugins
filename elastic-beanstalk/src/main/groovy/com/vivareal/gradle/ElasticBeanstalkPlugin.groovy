@@ -16,13 +16,15 @@ class ElasticBeanstalkPlugin implements Plugin<Project> {
 	def versionLabel
 	def configTemplate
 	AWSCredentials credentials
+	def warFilePath
 	
     void apply(Project project) {
 			
 		previousEnvironmentName = project.ext.has('currentEnvironment')?project.ext.currentEnvironment:null
 		applicationName = project.ext.has('applicationName')?project.ext.applicationName:null
 		configTemplate = project.ext.has('configTemplate')?project.ext.configTemplate:null
-	
+		warFilePath = project.ext.has('warFilePath')?project.ext.warFilePath:null
+		
 		credentials = getCredentials(project)
 		AWSElasticBeanstalk elasticBeanstalk;
 		AmazonS3 s3;
@@ -188,7 +190,10 @@ class ElasticBeanstalkPlugin implements Plugin<Project> {
 	}
 
 	private File projectWarFilename(Project project) {
+		if (!warFilePath)// If no war file path was specified, look in /build/libs
             new File(project.buildDir,"libs/${project.name}-${versionLabel}.war")
+		else
+			new File("${warFilePath}/${project.name}-${versionLabel}.war")
 	}
 	
 	@groovy.transform.TimedInterrupt(value = 20L, unit = TimeUnit.MINUTES)

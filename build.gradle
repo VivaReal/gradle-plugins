@@ -50,7 +50,7 @@ uploadArchives {
 
 project(':elastic-beanstalk') {
 
-    version = '1.0'
+    version = '1.0.1'
     
     dependencies {
       groovy localGroovy()
