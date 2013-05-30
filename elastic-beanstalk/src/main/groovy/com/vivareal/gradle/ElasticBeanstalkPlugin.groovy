@@ -108,15 +108,41 @@ class ElasticBeanstalkPlugin implements Plugin<Project> {
 		// Add a task that swaps environment CNAMEs
 	    project.task([dependsOn: 'uploadNewVersion',
 		                 description: "deploys a new version to an existing Elastic Beanstalk environment"],'deployBeanstalk') << {
-
+			
+			println "Checking if environment exists"
+			
+			try{
+			   def requestEnvironmentInfoRequest = new RequestEnvironmentInfoRequest(environmentName:previousEnvironmentName)
+			   def requestEnvironmentInfoResult = elasticBeanstalk.requestEnvironmentInfo(requestEnvironmentInfoRequest)
+			
 			//Deploy the new version to the new environment
 			println "Update environment with uploaded application version"
 			def updateEnviromentRequest = new UpdateEnvironmentRequest(environmentName:  previousEnvironmentName, versionLabel: versionLabel)
 			def updateEnviromentResult = elasticBeanstalk.updateEnvironment(updateEnviromentRequest)
 			println "Updated environment $updateEnviromentResult"
+	
+		    }catch(Exception ipe){
+			   println("Environment doesn't exist. creating environment")
+			   def createEnvironmentRequest = new CreateEnvironmentRequest(applicationName: applicationName, environmentName:  previousEnvironmentName, versionLabel: versionLabel, templateName: configTemplate)
+			   def createEnvironmentResult = elasticBeanstalk.createEnvironment(createEnvironmentRequest)
+			   println "Created environment $createEnvironmentResult"
+		    }				
 
 		}
+
+		// Add a task that swaps environment CNAMEse
+	    project.task([description: "deploys an existing version to an existing Elastic Beanstalk environment"],'deployBeanstalkVersion') << {
+
+			//Deploy the version to the environment
+			
+			this.versionLabel = project.ext.versionLabel
 		
+			println "Update environment with uploaded application version ${versionLabel}"
+			def updateEnviromentRequest = new UpdateEnvironmentRequest(environmentName:  previousEnvironmentName, versionLabel: versionLabel)
+			def updateEnviromentResult = elasticBeanstalk.updateEnvironment(updateEnviromentRequest)
+			println "Updated environment $updateEnviromentResult"
+
+		}		
 		
 		// Add a task that swaps environment CNAMEs
 	    project.task('uploadNewVersion') << {
@@ -126,7 +152,10 @@ class ElasticBeanstalkPlugin implements Plugin<Project> {
 		 //depends(war)
 		 // Log on to AWS with your credentials
 		
-		this.versionLabel = project.version
+		if (project.ext.has('versionLabel'))
+			this.versionLabel = project.ext.versionLabel
+		else	
+			this.versionLabel = project.version
 
 		 // Delete existing application
 		 if (applicationVersionAlreadyExists(elasticBeanstalk)) {
@@ -193,7 +222,7 @@ class ElasticBeanstalkPlugin implements Plugin<Project> {
 		if (!warFilePath)// If no war file path was specified, look in /build/libs
             new File(project.buildDir,"libs/${project.name}-${versionLabel}.war")
 		else
-			new File("${warFilePath}/${project.name}-${versionLabel}.war")
+			new File("${warFilePath}")
 	}
 	
 	@groovy.transform.TimedInterrupt(value = 20L, unit = TimeUnit.MINUTES)
