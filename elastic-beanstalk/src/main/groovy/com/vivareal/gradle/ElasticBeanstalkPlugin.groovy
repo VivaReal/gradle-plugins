@@ -17,6 +17,7 @@ class ElasticBeanstalkPlugin implements Plugin<Project> {
 	def configTemplate
 	AWSCredentials credentials
 	def warFilePath
+	def newEnvironmentName
 	
     void apply(Project project) {
 			
@@ -24,6 +25,10 @@ class ElasticBeanstalkPlugin implements Plugin<Project> {
 		applicationName = project.ext.has('applicationName')?project.ext.applicationName:null
 		configTemplate = project.ext.has('configTemplate')?project.ext.configTemplate:null
 		warFilePath = project.ext.has('warFilePath')?project.ext.warFilePath:null
+		versionLabel = project.ext.has('versionLabel')?project.ext.versionLabel:project.version
+		//if no new evn name is provided, use version as env name
+		newEnvironmentName = project.ext.has('newEnvironmentName')?project.ext.newEnvironmentName:versionLabel
+		
 		
 		credentials = getCredentials(project)
 		AWSElasticBeanstalk elasticBeanstalk;
@@ -34,9 +39,7 @@ class ElasticBeanstalkPlugin implements Plugin<Project> {
 		}
 		
 		project.task('testBeanstalk')<<{
-			
-			this.versionLabel = project.version
-			
+						
 			println "Application Name: ${applicationName}"
 			println "New Environment Name: ${environmentName}"
 			println "Current Environment:  ${previousEnvironmentName}"
@@ -48,7 +51,8 @@ class ElasticBeanstalkPlugin implements Plugin<Project> {
 			
 		}
 		
-        project.task([dependsOn: 'uploadNewVersion',
+		//dependsOn: 'uploadNewVersion',
+        project.task([
 		                description: "deploys a new version to a new Elastic Beanstalk environment with zero downtime"],'deployBeanstalkZeroDowntime') << {
 	
 		 //println project.ext.appName
@@ -105,7 +109,6 @@ class ElasticBeanstalkPlugin implements Plugin<Project> {
 		
         }
 		
-		// Add a task that swaps environment CNAMEs
 	    project.task([dependsOn: 'uploadNewVersion',
 		                 description: "deploys a new version to an existing Elastic Beanstalk environment"],'deployBeanstalk') << {
 			
@@ -130,17 +133,22 @@ class ElasticBeanstalkPlugin implements Plugin<Project> {
 
 		}
 
-		// Add a task that swaps environment CNAMEse
 	    project.task([description: "deploys an existing version to an existing Elastic Beanstalk environment"],'deployBeanstalkVersion') << {
-
-			//Deploy the version to the environment
+						
+			try{
 			
-			this.versionLabel = project.ext.versionLabel
-		
-			println "Update environment with uploaded application version ${versionLabel}"
+			//Deploy the existing version to the new environment
+			println "Update environment with existing application version ${versionLabel}"
 			def updateEnviromentRequest = new UpdateEnvironmentRequest(environmentName:  previousEnvironmentName, versionLabel: versionLabel)
 			def updateEnviromentResult = elasticBeanstalk.updateEnvironment(updateEnviromentRequest)
 			println "Updated environment $updateEnviromentResult"
+	
+		    }catch(Exception ipe){
+			   println("Environment doesn't exist. creating environment")
+			   def createEnvironmentRequest = new CreateEnvironmentRequest(applicationName: applicationName, environmentName:  previousEnvironmentName, versionLabel: versionLabel, templateName: configTemplate)
+			   def createEnvironmentResult = elasticBeanstalk.createEnvironment(createEnvironmentRequest)
+			   println "Created environment $createEnvironmentResult"
+		    }				
 
 		}		
 		
@@ -152,10 +160,6 @@ class ElasticBeanstalkPlugin implements Plugin<Project> {
 		 //depends(war)
 		 // Log on to AWS with your credentials
 		
-		if (project.ext.has('versionLabel'))
-			this.versionLabel = project.ext.versionLabel
-		else	
-			this.versionLabel = project.version
 
 		 // Delete existing application
 		 if (applicationVersionAlreadyExists(elasticBeanstalk)) {
@@ -211,7 +215,7 @@ class ElasticBeanstalkPlugin implements Plugin<Project> {
 	}
 	
 	private String getEnvironmentName() {
-	    "VivaRealAPI-${versionLabel}"
+	    newEnvironmentName
 	}
 	
 	private String getDescription() {
