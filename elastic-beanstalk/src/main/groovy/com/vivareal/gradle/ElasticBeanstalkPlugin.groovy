@@ -25,7 +25,7 @@ class ElasticBeanstalkPlugin implements Plugin<Project> {
 		applicationName = project.ext.has('applicationName')?project.ext.applicationName:null
 		configTemplate = project.ext.has('configTemplate')?project.ext.configTemplate:null
 		warFilePath = project.ext.has('warFilePath')?project.ext.warFilePath:null
-		versionLabel = project.ext.has('versionLabel')?project.ext.versionLabel:project.version
+		versionLabel = project.ext.has('versionLabel')?project.ext.versionLabel:project.version.toString()
 		//if no new evn name is provided, use version as env name
 		newEnvironmentName = project.ext.has('newEnvironmentName')?project.ext.newEnvironmentName:versionLabel
 		
