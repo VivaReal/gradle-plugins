@@ -111,9 +111,9 @@ class ElasticBeanstalkPlugin implements Plugin<Project> {
 		                 description: "deploys a new version to an existing Elastic Beanstalk environment"],'deployBeanstalk') << {
 			
 			println "Checking if environment exists"
-			
+			//override env name
 
-				def search = new DescribeEnvironmentsRequest(environmentNames: environmentName, applicationName:applicationName)
+				def search = new DescribeEnvironmentsRequest(environmentNames: [previousEnvironmentName], applicationName:applicationName)
 			    def result = elasticBeanstalk.describeEnvironments(search)
 
 				println(result.environments.status.toString())
