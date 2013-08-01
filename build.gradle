@@ -1,63 +1,76 @@
 
 allprojects {
-    apply plugin: 'maven-publish'
-    apply plugin: 'idea'
-    apply plugin: 'java'
+	apply plugin: 'maven-publish'
+	apply plugin: 'idea'
+	apply plugin: 'java'
 }
 
 subprojects {
-    apply plugin: 'groovy'
-    apply plugin: 'maven'
-    apply plugin: 'eclipse'
+	apply plugin: 'groovy'
+	apply plugin: 'maven'
+	apply plugin: 'eclipse'
 
-    group = 'com.vivareal.build.gradle'
+	group = 'com.vivareal.build.gradle'
 
-    repositories {
-        maven { url 'https://repo.springsource.org/libs-release' }
-    }
+	repositories { 
+		maven { url 'https://repo.springsource.org/libs-release' } 
+		mavenCentral()
+	}
 
-    dependencies {
-        compile gradleApi()
-        groovy localGroovy()
-    }
+	dependencies {
+		compile gradleApi()
+		groovy localGroovy()
+	}
 
 
 
-uploadArchives {
+	uploadArchives {
 
-    repositories.mavenDeployer {
-        repository(url: "https://jenkins.vivareal.com/nexus/content/repositories/releases") {
-            authentication(userName: "deployment", password: "8TrnlwNL5IuUX3cjeJE")
-        }
-    }
-         
+		repositories.mavenDeployer {
+			repository(url: "https://jenkins.vivareal.com/nexus/content/repositories/releases") {
+				authentication(userName: "deployment", password: "8TrnlwNL5IuUX3cjeJE")
+			}
+		}
+	}
 }
 
+repositories {
+	maven {
+		url "https://jenkins.vivareal.com/nexus/content/groups/public"
+		credentials {
+			username 'vivareal'
+			password '5GzIAhg6GqK2A0PSWE2IZz'
+		}
+	}
+	maven {url "http://repo.grails.org/grails/core/"}
+	mavenCentral()
 }
-    repositories {
-    	maven {
-    	   url "https://jenkins.vivareal.com/nexus/content/groups/public"
-    	   credentials {
-              username 'vivareal'
-              password '5GzIAhg6GqK2A0PSWE2IZz'
-           }
-    	}
-        maven {url "http://repo.grails.org/grails/core/"}
-        mavenCentral()
-    }
 
 
 
 project(':elastic-beanstalk') {
 
-    version = '1.0.2'
-    
-    dependencies {
-      groovy localGroovy()
-      compile gradleApi()
-      compile 'com.amazonaws:aws-java-sdk:1.3.27'
-      compile 'net.java.dev.jets3t:jets3t:0.9.0'
+	version = '1.0.2'
 
-   }
+	dependencies {
+		groovy localGroovy()
+		compile gradleApi()
+		compile 'com.amazonaws:aws-java-sdk:1.3.27'
+		compile 'net.java.dev.jets3t:jets3t:0.9.0'
+	}
 }
+
+project(':aws-ec2') {
+
+	version = '1.0.1'
+
+	dependencies {
+		groovy localGroovy()
+		compile gradleApi()
+		compile 'com.amazonaws:aws-java-sdk:1.3.27'
+		compile 'net.java.dev.jets3t:jets3t:0.9.0'
+		compile 'org.apache.directory.studio:org.apache.commons.codec:1.8'
+	}
+}
+
 
