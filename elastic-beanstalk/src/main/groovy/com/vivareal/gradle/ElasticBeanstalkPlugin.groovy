@@ -110,22 +110,24 @@ class ElasticBeanstalkPlugin implements Plugin<Project> {
 	    project.task([dependsOn: 'uploadNewVersion',
 		                 description: "deploys a new version to an existing Elastic Beanstalk environment"],'deployBeanstalk') << {
 			
-			println "Checking if environment exists"
 			//override env name
+			
+			def finalEnvName = previousEnvironmentName?previousEnvironmentName:environmentName;
+			
+			println "Checking if environment ${finalEnvName} exists"
 
-				def search = new DescribeEnvironmentsRequest(environmentNames: [previousEnvironmentName], applicationName:applicationName)
-			    def result = elasticBeanstalk.describeEnvironments(search)
+			def search = new DescribeEnvironmentsRequest(environmentNames: [finalEnvName], applicationName:applicationName)
+			def result = elasticBeanstalk.describeEnvironments(search)
 
-				println(result.environments.status.toString())
 				if (!result.environments.empty){
 					//Deploy the new version to the new environment
 					println "Update environment with uploaded application version"
-					def updateEnviromentRequest = new UpdateEnvironmentRequest(environmentName:  previousEnvironmentName, versionLabel: versionLabel)
+					def updateEnviromentRequest = new UpdateEnvironmentRequest(environmentName:  finalEnvName, versionLabel: versionLabel)
 					def updateEnviromentResult = elasticBeanstalk.updateEnvironment(updateEnviromentRequest)
 					println "Updated environment $updateEnviromentResult"
 				}else{
 					println("Environment doesn't exist. creating environment")
-			   		def createEnvironmentRequest = new CreateEnvironmentRequest(applicationName: applicationName, environmentName:  previousEnvironmentName, versionLabel: versionLabel, templateName: configTemplate)
+			   		def createEnvironmentRequest = new CreateEnvironmentRequest(applicationName: applicationName, environmentName:  finalEnvName, versionLabel: versionLabel, templateName: configTemplate)
 			   		def createEnvironmentResult = elasticBeanstalk.createEnvironment(createEnvironmentRequest)
 			   		println "Created environment $createEnvironmentResult"
 				}				
@@ -162,32 +164,34 @@ class ElasticBeanstalkPlugin implements Plugin<Project> {
 		 //this needs to go here because otherwise the root project version is used.
 		 this.versionLabel = project.ext.has('versionLabel')?project.ext.versionLabel:project.version.toString()
 
-		 // Delete existing application
-		 if (applicationVersionAlreadyExists(elasticBeanstalk)) {
-		 println "Delete existing application version"
-		 def deleteRequest = new DeleteApplicationVersionRequest(applicationName:     applicationName,
-		 versionLabel: versionLabel, deleteSourceBundle: true)
-		 elasticBeanstalk.deleteApplicationVersion(deleteRequest)
-		 }
+		 if (!project.ext.has('skipUpload')){
+		 	// Delete existing application
+		 	if (applicationVersionAlreadyExists(elasticBeanstalk)) {
+		 			println "Delete existing application version"
+		 			def deleteRequest = new DeleteApplicationVersionRequest(applicationName:     applicationName,
+		 				versionLabel: versionLabel, deleteSourceBundle: true)
+		 			elasticBeanstalk.deleteApplicationVersion(deleteRequest)
+		 	}
 
-		 // Upload a WAR file to Amazon S3
-		 println "Uploading application to Amazon S3"
-		 def warFile = projectWarFilename(project)
-		 String bucketName = elasticBeanstalk.createStorageLocation().getS3Bucket()
-		 String key = URLEncoder.encode("${project.name}-${versionLabel}.war", 'UTF-8')
-		 def s3Result = s3.putObject(bucketName, key, warFile)
-		 println "Uploaded application $s3Result.versionId"
+		 	// Upload a WAR file to Amazon S3
+		 	println "Uploading application to Amazon S3"
+		 	def warFile = projectWarFilename(project)
+		 	String bucketName = elasticBeanstalk.createStorageLocation().getS3Bucket()
+		 	String key = URLEncoder.encode("${project.name}-${versionLabel}.war", 'UTF-8')
+		 	def s3Result = s3.putObject(bucketName, key, warFile)
+		 	println "Uploaded application $s3Result.versionId"
 		
-		 // Register a new application version
-		 println "Create application version with uploaded application"
-		 def createApplicationRequest = new CreateApplicationVersionRequest(
-		 applicationName: applicationName, versionLabel: versionLabel,
-		 description: description,
-		 autoCreateApplication: true, sourceBundle: new S3Location(bucketName, key)
-		 )
-		 def createApplicationVersionResult = elasticBeanstalk.createApplicationVersion(createApplicationRequest)
-		 println "Registered application version $createApplicationVersionResult"
+		 	// Register a new application version
+		 	println "Create application version with uploaded application"
+		 	def createApplicationRequest = new CreateApplicationVersionRequest(
+		 		applicationName: applicationName, versionLabel: versionLabel,
+		 		description: description,
+		 		autoCreateApplication: true, sourceBundle: new S3Location(bucketName, key)
+		 		)
+		 	def createApplicationVersionResult = elasticBeanstalk.createApplicationVersion(createApplicationRequest)
+		 	println "Registered application version $createApplicationVersionResult"
 
+		}
 		}
 		
 
