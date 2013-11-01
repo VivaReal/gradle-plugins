@@ -8,6 +8,8 @@ import com.amazonaws.services.elasticbeanstalk.*
 import com.amazonaws.services.elasticbeanstalk.model.*
 import java.util.concurrent.TimeUnit
 import com.amazonaws.AmazonServiceException
+import com.amazonaws.regions.Region
+import com.amazonaws.regions.Regions
 
 class ElasticBeanstalkPlugin implements Plugin<Project> {
 	
@@ -30,10 +32,12 @@ class ElasticBeanstalkPlugin implements Plugin<Project> {
 		
 		credentials = getCredentials(project)
 		AWSElasticBeanstalk elasticBeanstalk;
+		
 		AmazonS3 s3;
 		if (credentials){
 			s3 = new AmazonS3Client(credentials)
 			elasticBeanstalk = new AWSElasticBeanstalkClient(credentials)
+			elasticBeanstalk.setRegion(Region.getRegion(Regions.SA_EAST_1))
 		}
 		
 		project.task('testBeanstalk')<<{
@@ -42,7 +46,7 @@ class ElasticBeanstalkPlugin implements Plugin<Project> {
 			println "New Environment Name: ${environmentName}"
 			println "Current Environment:  ${previousEnvironmentName}"
 			println "AWS credentials:  ${credentials}"
-			println "Config Template: ${configTemplate}" 
+			println "Config Template: ${configTemplate}"  
 			println "Root project version $project.rootProject.version"
 			println "Project's version $project.version"
 			println "Version label $versionLabel"

@@ -12,10 +12,10 @@ subprojects {
 
 	group = 'com.vivareal.build.gradle'
 
-	repositories { 
-		maven { url 'https://repo.springsource.org/libs-release' } 
-		mavenCentral()
-	}
+    repositories {
+        mavenCentral()
+        maven { url 'https://repo.springsource.org/libs-release' }
+    }
 
 	dependencies {
 		compile gradleApi()
@@ -50,8 +50,8 @@ repositories {
 
 project(':elastic-beanstalk') {
 
-	version = '1.0.2'
-
+    version = '1.0.3'
+    
 	dependencies {
 		groovy localGroovy()
 		compile gradleApi()
