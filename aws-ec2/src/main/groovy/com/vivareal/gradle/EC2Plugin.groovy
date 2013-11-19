@@ -21,6 +21,7 @@ class EC2Plugin implements Plugin<Project> {
 	def userData
 	def keyName
 	def credentials
+	def region
 
 	void apply(Project project) {
 
@@ -35,11 +36,13 @@ class EC2Plugin implements Plugin<Project> {
 			securityGroupId = project.ext.has('securityGroupId')?project.ext.securityGroupId:null
 			userData = project.ext.has('userData')?project.ext.userData:""
 			keyName = project.ext.has('keyName')?project.ext.keyName:null
+			region = project.ext.has('region')?project.ext.keyName:"sa-east-1";
 
 			if (accessKey && secretKey)
 				credentials = new BasicAWSCredentials(accessKey, secretKey)
 
 			AmazonEC2 ec2 = new AmazonEC2Client(credentials);
+			ec2.setEndpoint("https://ec2." + region + ".amazonaws.com");
 
 			RunInstancesRequest runInstancesRequest = new RunInstancesRequest()
 					.withInstanceType("${instanceType}")
