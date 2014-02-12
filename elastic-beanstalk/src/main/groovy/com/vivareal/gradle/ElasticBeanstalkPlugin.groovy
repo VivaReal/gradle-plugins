@@ -17,7 +17,7 @@ class ElasticBeanstalkPlugin implements Plugin<Project> {
     def previousEnvironmentName
     def versionLabel
     def configTemplate
-    AWSCredentials credentials
+    AWSCredentials awsCredentials
     def warFilePath
     def newEnvironmentName
 
@@ -30,13 +30,13 @@ class ElasticBeanstalkPlugin implements Plugin<Project> {
 	//if no new evn name is provided, use version as env name
 	newEnvironmentName = project.ext.has('newEnvironmentName')?project.ext.newEnvironmentName:versionLabel
 
-	credentials = getCredentials(project)
+	awsCredentials = getCredentials(project)
 	AWSElasticBeanstalk elasticBeanstalk;
 
 	AmazonS3 s3;
-	if (credentials){
-	    s3 = new AmazonS3Client(credentials)
-	    elasticBeanstalk = new AWSElasticBeanstalkClient(credentials)
+	if (awsCredentials){
+	    s3 = new AmazonS3Client(awsCredentials)
+	    elasticBeanstalk = new AWSElasticBeanstalkClient(awsCredentials)
 	    elasticBeanstalk.setRegion(Region.getRegion(Regions.SA_EAST_1))
 	}
 
@@ -45,7 +45,7 @@ class ElasticBeanstalkPlugin implements Plugin<Project> {
 	    println "Application Name: ${applicationName}"
 	    println "New Environment Name: ${environmentName}"
 	    println "Current Environment:  ${previousEnvironmentName}"
-	    println "AWS credentials:  ${credentials}"
+	    println "AWS credentials:  ${awsCredentials}"
 	    println "Config Template: ${configTemplate}"
 	    println "Root project version $project.rootProject.version"
 	    println "Project's version $project.version"
@@ -218,9 +218,9 @@ class ElasticBeanstalkPlugin implements Plugin<Project> {
 	def secretKey = project.ext.has('secretKey')?project.ext.secretKey:null
 
 	if (accessKey && secretKey)
-	    credentials = new BasicAWSCredentials(accessKey, secretKey)
+	    awsCredentials = new BasicAWSCredentials(accessKey, secretKey)
 
-	credentials
+	awsCredentials
     }
 
     private String getEnvironmentName() {
