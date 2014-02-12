@@ -47,7 +47,7 @@ repositories {
 
 project(':elastic-beanstalk') {
 
-    version = '1.0.3'
+    version = '1.0.4'
 
     dependencies {
 	compile localGroovy()
@@ -59,7 +59,7 @@ project(':elastic-beanstalk') {
 
 project(':aws-ec2') {
 
-    version = '1.0.2'
+    version = '1.0.3'
 
     dependencies {
 	compile localGroovy()
