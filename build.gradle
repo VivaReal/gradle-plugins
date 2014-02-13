@@ -33,13 +33,6 @@ subprojects {
 }
 
 repositories {
-    /*maven {
-	url "https://jenkins.vivareal.com/nexus/content/groups/public"
-	credentials {
-	    username 'vivareal'
-	    password '5GzIAhg6GqK2A0PSWE2IZz'
-	}
-    }*/
     maven {url "http://repo.grails.org/grails/core/"}
     mavenCentral()
 }
