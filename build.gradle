@@ -25,21 +25,21 @@ subprojects {
     uploadArchives {
 
 	repositories.mavenDeployer {
-	    repository(url: "https://jenkins.vivareal.com/nexus/content/repositories/releases") {
-		authentication(userName: "deployment", password: "8TrnlwNL5IuUX3cjeJE")
+	    repository(url: project.ext.repositoryReleasesUrl) {
+		authentication(userName: project.ext.repositoryUser, password: project.ext.repositoryPwd)
 	    }
 	}
     }
 }
 
 repositories {
-    maven {
+    /*maven {
 	url "https://jenkins.vivareal.com/nexus/content/groups/public"
 	credentials {
 	    username 'vivareal'
 	    password '5GzIAhg6GqK2A0PSWE2IZz'
 	}
-    }
+    }*/
     maven {url "http://repo.grails.org/grails/core/"}
     mavenCentral()
 }
@@ -47,7 +47,7 @@ repositories {
 
 project(':elastic-beanstalk') {
 
-    version = '1.0.4'
+    version = '1.0.4-SNAPSHOT'
 
     dependencies {
 	compile localGroovy()

@@ -37,7 +37,16 @@ class ElasticBeanstalkPlugin implements Plugin<Project> {
 	if (awsCredentials){
 	    s3 = new AmazonS3Client(awsCredentials)
 	    elasticBeanstalk = new AWSElasticBeanstalkClient(awsCredentials)
-	    elasticBeanstalk.setRegion(Region.getRegion(Regions.SA_EAST_1))
+	    try{
+		if (project.ext.has('awsRegion')){
+		    elasticBeanstalk.setRegion(Region.getRegion(Regions.valueOf(project.ext.awsRegion)))
+		}else {
+		    elasticBeanstalk.setRegion(Region.getRegion(Regions.SA_EAST_1))
+		}
+	    }catch(Exception e){
+		elasticBeanstalk.setRegion(Region.getRegion(Regions.SA_EAST_1))
+	    }
+
 	}
 
 	project.task('testBeanstalk')<<{
@@ -45,7 +54,8 @@ class ElasticBeanstalkPlugin implements Plugin<Project> {
 	    println "Application Name: ${applicationName}"
 	    println "New Environment Name: ${environmentName}"
 	    println "Current Environment:  ${previousEnvironmentName}"
-	    println "AWS credentials:  ${awsCredentials}"
+	    println "AWS credentials: $elasticBeanstalk"
+	    println "AWS Region:  ${awsCredentials}"
 	    println "Config Template: ${configTemplate}"
 	    println "Root project version $project.rootProject.version"
 	    println "Project's version $project.version"
