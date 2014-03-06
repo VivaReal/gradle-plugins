@@ -34,9 +34,9 @@ class EC2Plugin implements Plugin<Project> {
 	    imageId = project.ext.has('imageId')?project.ext.imageId:null
 	    subnetId = project.ext.has('subnetId')?project.ext.subnetId:null
 	    securityGroupId = project.ext.has('securityGroupId')?project.ext.securityGroupId:null
-	    userData = project.ext.has('userData')?project.ext.userData:""
+	    userData = project.ext.has('userData')?project.ext.userData:null
 	    keyName = project.ext.has('keyName')?project.ext.keyName:null
-	    region = project.ext.has('region')?project.ext.keyName:"sa-east-1";
+	    region = project.ext.has('region')?project.ext.region:null;
 
 	    if (accessKey && secretKey)
 		credentials = new BasicAWSCredentials(accessKey, secretKey)
@@ -50,9 +50,12 @@ class EC2Plugin implements Plugin<Project> {
 		    .withMinCount(1)
 		    .withMaxCount(1)
 		    .withSubnetId("${subnetId}")
-		    .withSecurityGroupIds("${securityGroupId}")
 		    .withKeyName("${keyName}")
 		    .withUserData(Base64.encodeBase64String("${userData}".getBytes()))
+		    
+	    if(securityGroupId) {
+	    	runInstancesRequest.setSecurityGroupIds("${securityGroupId}")
+	    }
 
 	    RunInstancesResult runInstances = ec2.runInstances(runInstancesRequest)
 	    def instanceId = runInstances.reservation.instances.get(0).instanceId
