@@ -45,6 +45,7 @@ class EC2Plugin implements Plugin<Project> {
 						.withSecurityGroupIds("${project.securityGroupId}")
 						.withKeyName("${project.keyName}")
 						.withUserData(Base64.encodeBase64String("${userData}".getBytes()))
+						.withInstanceInitiatedShutdownBehavior("terminate")
 
 				if(project.securityGroupId) {
 					def groupIds = []
