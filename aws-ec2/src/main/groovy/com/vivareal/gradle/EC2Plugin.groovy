@@ -45,6 +45,7 @@ class EC2Plugin implements Plugin<Project> {
 						.withSecurityGroupIds("${project.securityGroupId}".split(","))
 						.withKeyName("${project.keyName}")
 						.withUserData(Base64.encodeBase64String("${userData}".getBytes()))
+						.withInstanceInitiatedShutdownBehavior("terminate")
 
 				RunInstancesResult runInstances = ec2.runInstances(runInstancesRequest)
 				def instanceId = runInstances.reservation.instances.get(0).instanceId
