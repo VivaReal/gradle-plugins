@@ -48,6 +48,7 @@ class ElasticBeanstalkPlugin implements Plugin<Project> {
     def newEnvironmentName
     def hotDeploy
     def tier
+    def prodUrlPrefix
 
     AWSCredentials awsCredentials
 
@@ -58,14 +59,14 @@ class ElasticBeanstalkPlugin implements Plugin<Project> {
     final def BEANSTALK_JVM_PARAMETER_PREFIX = "beanstalk.jvm."
     final def BEANSTALK_LAUNCH_CONFIG_PARAMETER_PREFIX = "beanstalk.launchconfig."
     def namespaceParameters  = [:]
-    
+
 
     void apply(Project project) {
-	
+
 	namespaceParameters[BEANSTALK_ENV_PROPERTY_PREFIX] = APP_ENV_NAMESPACE
 	namespaceParameters[BEANSTALK_JVM_PARAMETER_PREFIX] = JVM_OPTS_NAMESPACE
 	namespaceParameters[BEANSTALK_LAUNCH_CONFIG_PARAMETER_PREFIX] = LAUNCH_CONFIG_OPTS_NAMESPACE
-	
+
 	awsCredentials = getCredentials(project)
 
 	AWSElasticBeanstalk elasticBeanstalk
@@ -83,6 +84,7 @@ class ElasticBeanstalkPlugin implements Plugin<Project> {
 	versionLabel = project.ext.has('versionLabel')?project.ext.versionLabel:versionLabel
 	hotDeploy = project.ext.has('hotDeploy')?project.ext.hotDeploy.toBoolean():true
     tier = project.ext.has('tier') ? project.ext.tier:"web"
+    prodUrlPrefix = project.ext.has('prodUrlPrefix')?project.ext.prodUrlPrefix:null
 
 
 	if (awsCredentials) {
@@ -96,7 +98,7 @@ class ElasticBeanstalkPlugin implements Plugin<Project> {
 		def region = Region.getRegion(Regions.SA_EAST_1)
 		if (project.ext.has('awsRegion')) {
 		    region = Region.getRegion(Regions.valueOf(project.ext.awsRegion))
-		}		
+		}
 		elasticBeanstalk.setRegion(region)
 		loadBalancer.setRegion(region)
 		autoScaling.setRegion(region)
@@ -213,6 +215,14 @@ class ElasticBeanstalkPlugin implements Plugin<Project> {
             if (!hotDeploy) {
                 throw new RuntimeException("The environment is already running, choose another environment or specify -PhotDeploy=true")
             }
+
+            if (prodUrlPrefix) {
+              def isProductionEnv = result.environments['CNAME'].any { it =~ prodUrlPrefix }
+              if (isProductionEnv) {
+                throw new IllegalStateException("Attempting to update the production environment: $finalEnvName")
+              }
+            }
+
             //Deploy the new version to the new environment
             println "Update environment with uploaded application version"
             def updateEnviromentRequest = new UpdateEnvironmentRequest(environmentName:  finalEnvName, versionLabel: versionLabel)
@@ -477,4 +487,3 @@ class ElasticBeanstalkPlugin implements Plugin<Project> {
 	response
     }
 }
-
